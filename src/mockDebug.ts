@@ -56,6 +56,7 @@ export class MockDebugSession extends LoggingDebugSession {
 
 		// setup event handlers
 		this._runtime.on('stopOnEntry', () => {
+			this.sendEvent(new OutputEvent("Stopped on entry!"));
 			this.sendEvent(new StoppedEvent('entry', MockDebugSession.THREAD_ID));
 		});
 		this._runtime.on('stopOnStep', () => {
@@ -168,16 +169,11 @@ export class MockDebugSession extends LoggingDebugSession {
 	}
 
 	protected stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments): void {
-
-		const startFrame = typeof args.startFrame === 'number' ? args.startFrame : 0;
-		const maxLevels = typeof args.levels === 'number' ? args.levels : 1000;
-		const endFrame = startFrame + maxLevels;
-
-		const stk = this._runtime.stack(startFrame, endFrame);
+		this.sendEvent(new OutputEvent("Sending empty call stack!"));
 
 		response.body = {
-			stackFrames: stk.frames.map(f => new StackFrame(f.index, f.name, this.createSource(f.file), this.convertDebuggerLineToClient(f.line))),
-			totalFrames: stk.count
+			stackFrames: [],
+			totalFrames: 0,
 		};
 		this.sendResponse(response);
 	}
@@ -233,6 +229,7 @@ export class MockDebugSession extends LoggingDebugSession {
 	}
 
 	protected continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments): void {
+		this.sendEvent(new OutputEvent("Continue was called!"));
 		this._runtime.continue();
 		this.sendResponse(response);
 	}
